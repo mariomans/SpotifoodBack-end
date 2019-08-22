@@ -39,8 +39,9 @@ const userSchema = new Schema({
     about: {
         type: String,
         trim: true
-    }
-
+    },
+    following: [{type: ObjectId, ref: "User"}],
+    followers: [{type: ObjectId, ref: "User"}]
 });
 
 //virtual field
