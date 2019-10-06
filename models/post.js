@@ -18,6 +18,10 @@ const postSchema = new mongoose.Schema({
         data: Buffer,
         contentType: String
     },
+    advertisement: {
+        data: Buffer,
+        contentType: String
+    },
     postedBy: {
         type: ObjectId,
         ref: "User"
@@ -27,7 +31,9 @@ const postSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    updated: Date
+    updated: Date,
+    following: [{type: ObjectId, ref: "Post"}],
+    followers: [{type: ObjectId, ref: "Post"}]
 });
 
 module.exports = mongoose.model("Post", postSchema);
