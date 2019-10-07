@@ -37,7 +37,7 @@ exports.allUsers = (req, res) => {
             });
         }
         res.json(users);
-    }).select("name email updated created role");
+    }).select("name email updated created role personalization");
 };
 
 exports.getUser = (req, res) => {
