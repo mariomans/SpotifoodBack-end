@@ -40,8 +40,18 @@ const userSchema = new Schema({
         type: String,
         trim: true
     },
+    personalization: {
+        type: String,
+        trim: true,
+        required: true
+    },
+    
     following: [{type: ObjectId, ref: "User"}],
-    followers: [{type: ObjectId, ref: "User"}]
+    followers: [{type: ObjectId, ref: "User"}],
+    role: {
+        type: String,
+        default: "subscriber"
+    }
 });
 
 //virtual field

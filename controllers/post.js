@@ -6,6 +6,7 @@ const _ = require('lodash');
 exports.postById = (req, res, next, id) => {
     Post.findById(id)
         .populate("postedBy", "_id name")
+        .populate("postedBy", "_id name role")
         .exec((err, post) => {
             if (err || !post) {
                 return res.status(400).json({
@@ -16,13 +17,29 @@ exports.postById = (req, res, next, id) => {
             next();
         });
 };
-exports.getPosts = (req, res) => {
-    const posts = Post.find()
-        .populate("postedBy", "_id name")
-        .select("_id title body created")
-        .sort({ created: -1 })
+exports.getPosts = async (req, res) => {
+    // get current page from req.query or use default value of 1
+    const currentPage = req.query.page || 1;
+    // return 3 posts per page
+    const perPage = 9;
+    let totalItems;
+
+    const posts = await Post.find()
+        // countDocuments() gives you total count of posts
+        .countDocuments()
+        .then(count => {
+            totalItems = count;
+            return Post.find()
+                .skip((currentPage - 1) * perPage)
+                .populate("comments", "text created")
+                .populate("comments.postedBy", "_id name")
+                .populate("postedBy", "_id name")
+                .sort({ date: -1 })
+                .limit(perPage)
+                .select("_id title body likes");
+        })
         .then(posts => {
-            res.json(posts);
+            res.status(200).json(posts);
         })
         .catch(err => console.log(err));
 };
@@ -46,6 +63,10 @@ exports.createPost = (req, res, next) => {
         if (files.photo) {
             post.photo.data = fs.readFileSync(files.photo.path);
             post.photo.contentType = files.photo.type;
+        }
+        if (files.advertisement) {
+            post.advertisement.data = fs.readFileSync(files.advertisement.path);
+            post.advertisement.contentType = files.advertisement.type;
         }
         post.save((err, result) => {
             if (err) {
@@ -79,7 +100,13 @@ exports.postsByUser = (req, res) => {
 }
 
 exports.isPoster = (req, res, next) => {
-    let isPoster = req.post && req.auth && req.post.postedBy._id == req.auth._id
+    let sameUser = req.post && req.auth && req.post.postedBy._id == req.auth._id;
+    let admidUser = req.post && req.auth && req.auth.role === "admin";
+
+    console.log("req.post", req.post, "req.auth", req.auth);
+    console.log("SAMEUSER: ", sameUser, " ADMINUSER:", admidUser);
+
+    let isPoster = sameUser || adminUser;
 
     if (!isPoster) {
         return res.status(403).json({
@@ -121,7 +148,10 @@ exports.updatePost = (req, res, next) => {
             post.photo.data = fs.readFileSync(files.photo.path);
             post.photo.contentType = files.photo.type;
         }
-
+        if (files.advertisement) {
+            post.advertisement.data = fs.readFileSync(files.advertisement.path);
+            post.advertisement.contentType = files.advertisement.type;
+        }
         post.save((err, result) => {
             if (err) {
                 return res.status(400).json({
@@ -150,6 +180,11 @@ exports.deletePost = (req, res) => {
 exports.photo = (req, res) => {
     res.set("Content-Type", req.post.photo.contentType);
     return res.send(req.post.photo.data);
+}
+
+exports.advertisement = (req, res) => {
+    res.set("Content-Type", req.post.advertisement.contentType);
+    return res.send(req.post.advertisement.data);
 }
 
 exports.singlePost = (req, res) => {
