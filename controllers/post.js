@@ -36,7 +36,7 @@ exports.getPosts = async (req, res) => {
                 .populate("postedBy", "_id name")
                 .sort({ date: -1 })
                 .limit(perPage)
-                .select("_id title body likes");
+                .select("_id title body created likes");
         })
         .then(posts => {
             res.status(200).json(posts);
@@ -88,6 +88,7 @@ exports.createPost = (req, res, next) => {
 exports.postsByUser = (req, res) => {
     Post.find({ postedBy: req.profile._id })
         .populate("postedBy", "_id name")
+        .select("_id title body created likes")
         .sort("_created")
         .exec((err, posts) => {
             if (err) {
@@ -190,3 +191,31 @@ exports.advertisement = (req, res) => {
 exports.singlePost = (req, res) => {
     return res.json(req.post);
 }
+
+exports.like = (req, res) => {
+    Post.findByIdAndUpdate(req.body.postId, { $push: { likes: req.body.userId } }, { new: true }).exec(
+        (err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: err
+                });
+            } else {
+                res.json(result);
+            }
+        }
+    );
+};
+
+exports.unlike = (req, res) => {
+    Post.findByIdAndUpdate(req.body.postId, { $pull: { likes: req.body.userId } }, { new: true }).exec(
+        (err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: err
+                });
+            } else {
+                res.json(result);
+            }
+        }
+    );
+};

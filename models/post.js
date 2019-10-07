@@ -33,7 +33,8 @@ const postSchema = new mongoose.Schema({
     },
     updated: Date,
     following: [{type: ObjectId, ref: "Post"}],
-    followers: [{type: ObjectId, ref: "Post"}]
+    followers: [{type: ObjectId, ref: "Post"}],
+    likes: [{type: ObjectId, ref: "Post"}]
 });
 
 module.exports = mongoose.model("Post", postSchema);
