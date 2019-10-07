@@ -204,3 +204,17 @@ exports.like = (req, res) => {
         }
     );
 };
+
+exports.unlike = (req, res) => {
+    Post.findByIdAndUpdate(req.body.postId, { $pull: { likes: req.body.userId } }, { new: true }).exec(
+        (err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: err
+                });
+            } else {
+                res.json(result);
+            }
+        }
+    );
+};
