@@ -190,3 +190,17 @@ exports.advertisement = (req, res) => {
 exports.singlePost = (req, res) => {
     return res.json(req.post);
 }
+
+exports.like = (req, res) => {
+    Post.findByIdAndUpdate(req.body.postId, { $push: { likes: req.body.userId } }, { new: true }).exec(
+        (err, result) => {
+            if (err) {
+                return res.status(400).json({
+                    error: err
+                });
+            } else {
+                res.json(result);
+            }
+        }
+    );
+};
