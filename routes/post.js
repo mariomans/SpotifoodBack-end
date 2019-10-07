@@ -8,8 +8,8 @@ const router = express.Router();
 router.get('/posts', getPosts);
 
 //like unlike
-router.put('/post/like', requireSignin, like)
-router.put('/post/unlike', requireSignin, unlike)
+router.put('/post/like', requireSignin, like);
+router.put('/post/unlike', requireSignin, unlike);
 
 router.post('/post/new/:userId', requireSignin, createPost, createPostValidator);
 router.get('/posts/by/:userId', requireSignin, postsByUser);
