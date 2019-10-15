@@ -7,6 +7,7 @@ exports.postById = (req, res, next, id) => {
     Post.findById(id)
         .populate("postedBy", "_id name")
         .populate("postedBy", "_id name role")
+        .select('_id title body bodys created likes photo')
         .exec((err, post) => {
             if (err || !post) {
                 return res.status(400).json({
@@ -31,12 +32,12 @@ exports.getPosts = async (req, res) => {
             totalItems = count;
             return Post.find()
                 .skip((currentPage - 1) * perPage)
-                .populate("comments", "text created")
+                .populate("comments", "text created type")
                 .populate("comments.postedBy", "_id name")
                 .populate("postedBy", "_id name")
                 .sort({ date: -1 })
                 .limit(perPage)
-                .select("_id title body created likes");
+                .select("_id title body created likes type");
         })
         .then(posts => {
             res.status(200).json(posts);
@@ -46,11 +47,11 @@ exports.getPosts = async (req, res) => {
 
 exports.createPost = (req, res, next) => {
     let form = new formidable.IncomingForm();
-    form.keepExtensions = true
+    form.keepExtensions = true;
     form.parse(req, (err, fields, files) => {
         if (err) {
             return res.status(400).json({
-                error: "Image could not be uploaded"
+                error: 'Image could not be uploaded'
             });
         }
         let post = new Post(fields);
@@ -58,15 +59,10 @@ exports.createPost = (req, res, next) => {
         req.profile.hashed_password = undefined;
         req.profile.salt = undefined;
         post.postedBy = req.profile;
-        console.log("Profile", req.profile);
 
         if (files.photo) {
             post.photo.data = fs.readFileSync(files.photo.path);
             post.photo.contentType = files.photo.type;
-        }
-        if (files.advertisement) {
-            post.advertisement.data = fs.readFileSync(files.advertisement.path);
-            post.advertisement.contentType = files.advertisement.type;
         }
         post.save((err, result) => {
             if (err) {
@@ -77,18 +73,12 @@ exports.createPost = (req, res, next) => {
             res.json(result);
         });
     });
-    const post = new Post(req.body);
-    post.save().then(result => {
-        res.json({
-            post: result
-        });
-    });
 };
 
 exports.postsByUser = (req, res) => {
     Post.find({ postedBy: req.profile._id })
         .populate("postedBy", "_id name")
-        .select("_id title body created likes")
+        .select("_id title body created likes type")
         .sort("_created")
         .exec((err, posts) => {
             if (err) {
@@ -132,12 +122,12 @@ exports.isPoster = (req, res, next) => {
 // };
 
 exports.updatePost = (req, res, next) => {
-    let form = new formidable.IncomingForm()
-    form.keepExtensions = true
+    let form = new formidable.IncomingForm();
+    form.keepExtensions = true;
     form.parse(req, (err, fields, files) => {
         if (err) {
             return res.status(400).json({
-                error: "Photo could not be uploaded"
+                error: 'Photo could not be uploaded'
             });
         }
         // save post
@@ -149,10 +139,7 @@ exports.updatePost = (req, res, next) => {
             post.photo.data = fs.readFileSync(files.photo.path);
             post.photo.contentType = files.photo.type;
         }
-        if (files.advertisement) {
-            post.advertisement.data = fs.readFileSync(files.advertisement.path);
-            post.advertisement.contentType = files.advertisement.type;
-        }
+
         post.save((err, result) => {
             if (err) {
                 return res.status(400).json({
@@ -183,14 +170,26 @@ exports.photo = (req, res) => {
     return res.send(req.post.photo.data);
 }
 
-exports.advertisement = (req, res) => {
-    res.set("Content-Type", req.post.advertisement.contentType);
-    return res.send(req.post.advertisement.data);
-}
+// exports.advertisement = (req, res) => {
+//     res.set("Content-Type", req.post.advertisement.contentType);
+//     return res.send(req.post.advertisement.data);
+// }
 
 exports.singlePost = (req, res) => {
     return res.json(req.post);
 }
+
+
+exports.getlike = (req, res) => {
+    User.find((err, likes) => {
+        if (err) {
+            return res.status(400).json({
+                error: err
+            });
+        }
+        res.json(likes);
+    })
+};
 
 exports.like = (req, res) => {
     Post.findByIdAndUpdate(req.body.postId, { $push: { likes: req.body.userId } }, { new: true }).exec(
