@@ -7,7 +7,7 @@ exports.postById = (req, res, next, id) => {
     Post.findById(id)
         .populate("postedBy", "_id name")
         .populate("postedBy", "_id name role")
-        .select('_id title body bodys created likes photo')
+        .select('_id title body bodys created likes comments photo')
         .exec((err, post) => {
             if (err || !post) {
                 return res.status(400).json({
@@ -20,7 +20,7 @@ exports.postById = (req, res, next, id) => {
 };
 exports.getPosts = async (req, res) => {
     // get current page from req.query or use default value of 1
-    const currentPage = req.query.page || 1;
+    const currentPage = req.query.page || 1
     // return 3 posts per page
     const perPage = 9;
     let totalItems;
@@ -37,7 +37,7 @@ exports.getPosts = async (req, res) => {
                 .populate("postedBy", "_id name")
                 .sort({ date: -1 })
                 .limit(perPage)
-                .select("_id title body created likes type");
+                .select("_id title body bodys created likes type");
         })
         .then(posts => {
             res.status(200).json(posts);
@@ -170,10 +170,6 @@ exports.photo = (req, res) => {
     return res.send(req.post.photo.data);
 }
 
-// exports.advertisement = (req, res) => {
-//     res.set("Content-Type", req.post.advertisement.contentType);
-//     return res.send(req.post.advertisement.data);
-// }
 
 exports.singlePost = (req, res) => {
     return res.json(req.post);
