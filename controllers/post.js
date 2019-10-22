@@ -7,7 +7,7 @@ exports.postById = (req, res, next, id) => {
     Post.findById(id)
         .populate("postedBy", "_id name")
         .populate("postedBy", "_id name role")
-        .select('_id title body bodys created likes comments photo')
+        .select('_id title body bodys created likes comments photo advertisement')
         .exec((err, post) => {
             if (err || !post) {
                 return res.status(400).json({
@@ -22,7 +22,7 @@ exports.getPosts = async (req, res) => {
     // get current page from req.query or use default value of 1
     const currentPage = req.query.page || 1
     // return 3 posts per page
-    const perPage = 9;
+    const perPage = 120;
     let totalItems;
 
     const posts = await Post.find()
@@ -92,16 +92,16 @@ exports.postsByUser = (req, res) => {
 
 exports.isPoster = (req, res, next) => {
     let sameUser = req.post && req.auth && req.post.postedBy._id == req.auth._id;
-    let admidUser = req.post && req.auth && req.auth.role === "admin";
+    let adminUser = req.post && req.auth && req.auth.role === 'admin';
 
-    console.log("req.post", req.post, "req.auth", req.auth);
-    console.log("SAMEUSER: ", sameUser, " ADMINUSER:", admidUser);
+    // console.log("req.post ", req.post, " req.auth ", req.auth);
+    // console.log("SAMEUSER: ", sameUser, " ADMINUSER: ", adminUser);
 
     let isPoster = sameUser || adminUser;
 
     if (!isPoster) {
         return res.status(403).json({
-            error: "User is not authorized"
+            error: 'User is not authorized'
         });
     }
     next();
@@ -169,7 +169,6 @@ exports.photo = (req, res) => {
     res.set("Content-Type", req.post.photo.contentType);
     return res.send(req.post.photo.data);
 }
-
 
 exports.singlePost = (req, res) => {
     return res.json(req.post);
