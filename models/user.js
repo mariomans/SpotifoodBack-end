@@ -42,8 +42,7 @@ const userSchema = new Schema({
     },
     personalization: {
         type: String,
-        trim: true,
-        required: true
+        trim: true
     },
     
     following: [{type: ObjectId, ref: "User"}],
@@ -51,7 +50,8 @@ const userSchema = new Schema({
     role: {
         type: String,
         default: "subscriber"
-    }
+    },
+    // history: [{type: ObjectId}]
 });
 
 //virtual field

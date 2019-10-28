@@ -14,6 +14,9 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    type: {
+        type: String
+    },
     photo: {
         data: Buffer,
         contentType: String
@@ -32,8 +35,6 @@ const postSchema = new mongoose.Schema({
         default: Date.now
     },
     updated: Date,
-    following: [{type: ObjectId, ref: "Post"}],
-    followers: [{type: ObjectId, ref: "Post"}],
     likes: [{type: ObjectId, ref: "Post"}]
 });
 
