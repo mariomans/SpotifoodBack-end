@@ -1,4 +1,5 @@
 const Post = require('../models/post')
+const User = require('../models/user')
 const formidable = require('formidable');
 const fs = require('fs');
 const _ = require('lodash');
@@ -18,6 +19,38 @@ exports.postById = (req, res, next, id) => {
             next();
         });
 };
+exports.getPost = async (req, res) => {
+    // get current page from req.query or use default value of 1
+    const currentPage = req.query.page || 1
+
+    // return 3 posts per page
+    const Personality = req.query.personality;
+    // console.log(Personality)
+    const perPage = 3;
+    let totalItems;
+
+    const posts = await Post.find()
+        // countDocuments() gives you total count of posts
+        .countDocuments()
+        .then(count => {
+            totalItems = count;
+            return Post.find({tag1 : Personality})
+                .skip((currentPage - 1) * perPage)
+                .populate("comments", "text created type")
+                .populate("comments.postedBy", "_id name")
+                .populate("postedBy", "_id name")
+                .sort({ date: -1 })
+                .limit(perPage)
+                .select("_id title body bodys created likes type tag1 tag2");
+        })
+        .then(posts => {
+            res.status(200).json(posts);
+            
+        })
+        .catch(err => console.log(err));
+};
+
+
 exports.getPosts = async (req, res) => {
     // get current page from req.query or use default value of 1
     const currentPage = req.query.page || 1
@@ -37,7 +70,7 @@ exports.getPosts = async (req, res) => {
                 .populate("postedBy", "_id name")
                 .sort({ date: -1 })
                 .limit(perPage)
-                .select("_id title body bodys created likes type");
+                .select("_id title body bodys created likes type tag1 tag2");
         })
         .then(posts => {
             res.status(200).json(posts);
@@ -45,32 +78,7 @@ exports.getPosts = async (req, res) => {
         .catch(err => console.log(err));
 };
 
-exports.getPost = async (req, res) => {
-    // get current page from req.query or use default value of 1
-    const currentPage = req.query.page || 1
-    // return 3 posts per page
-    const perPage = 3;
-    let totalItems;
 
-    const posts = await Post.find()
-        // countDocuments() gives you total count of posts
-        .countDocuments()
-        .then(count => {
-            totalItems = count;
-            return Post.find()
-                .skip((currentPage - 1) * perPage)
-                .populate("comments", "text created type")
-                .populate("comments.postedBy", "_id name")
-                .populate("postedBy", "_id name")
-                .sort({ date: -1 })
-                .limit(perPage)
-                .select("_id title body bodys created likes type");
-        })
-        .then(posts => {
-            res.status(200).json(posts);
-        })
-        .catch(err => console.log(err));
-};
 
 exports.createPost = (req, res, next) => {
     let form = new formidable.IncomingForm();
