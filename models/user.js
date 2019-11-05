@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const uuidv1 = require('uuid/v1');
 const crypto = require('crypto');
 const Schema = mongoose.Schema;
-const {ObjectId} = mongoose.Schema;
+const { ObjectId } = mongoose.Schema;
 
 const userSchema = new Schema({
     name: {
@@ -44,9 +44,13 @@ const userSchema = new Schema({
         type: String,
         trim: true
     },
-    
-    following: [{type: ObjectId, ref: "User"}],
-    followers: [{type: ObjectId, ref: "User"}],
+    personality: {
+        type: String,
+    },
+    likes:
+        [{ type: ObjectId, ref: "Post" }],
+    following: [{ type: ObjectId, ref: "User" }],
+    followers: [{ type: ObjectId, ref: "User" }],
     role: {
         type: String,
         default: "subscriber"
@@ -64,13 +68,13 @@ userSchema.virtual('password')
         // encryptPassword()
         this.hashed_password = this.encryptPassword(password)
     })
-    .get(function() {
+    .get(function () {
         return this._password
     })
 
 //methods
 userSchema.methods = {
-    authenticate: function(plainText) {
+    authenticate: function (plainText) {
         return this.encryptPassword(plainText) === this.hashed_password
     },
 
@@ -78,8 +82,8 @@ userSchema.methods = {
         if (!password) return "";
         try {
             return crypto.createHmac('sha1', this.salt)
-            .update(password)
-            .digest('hex');
+                .update(password)
+                .digest('hex');
         } catch (err) {
             return ""
         }

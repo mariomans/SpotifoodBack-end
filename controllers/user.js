@@ -8,6 +8,7 @@ exports.userById = (req, res, next, id) => {
         // populate followers and following users array
         .populate('following', '_id name')
         .populate('followers', '_id name')
+        .populate('likes', '_id title')
         .exec((err, user) => {
             if (err || !user) {
                 return res.status(400).json({
@@ -44,7 +45,7 @@ exports.allUsers = (req, res) => {
             });
         }
         res.json(users);
-    }).select("name email updated created role personalization");
+    }).select("name email updated created role personalization personality likes");
 };
 
 exports.getUser = (req, res) => {

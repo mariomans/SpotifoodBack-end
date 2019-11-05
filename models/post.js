@@ -17,6 +17,24 @@ const postSchema = new mongoose.Schema({
     type: {
         type: String
     },
+    tag1: {
+        type: String
+    },
+    tag2: {
+        type: String
+    },
+    tag3: {
+        type: String
+    },
+    tag4: {
+        type: String
+    },
+    tag5: {
+        type: String
+    },
+    tag6: {
+        type: String
+    },
     photo: {
         data: Buffer,
         contentType: String
@@ -26,6 +44,11 @@ const postSchema = new mongoose.Schema({
         contentType: String
     },
     postedBy: {
+        type: ObjectId,
+        ref: "User"
+
+    },
+    postedByper: {
         type: ObjectId,
         ref: "User"
 
